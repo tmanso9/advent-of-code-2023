@@ -72,6 +72,10 @@ const secondLevel = () => {
 	console.log('Second level solution:\t', finalAnswer)
 }
 
-firstLevel()
-total.splice(0, total.length)
-secondLevel()
+const main = () => {
+	firstLevel()
+	total.splice(0, total.length)
+	secondLevel()
+}
+
+main()
