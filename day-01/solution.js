@@ -1,10 +1,4 @@
-const fs = require('fs')
-
-const readData = () => {
-	const data = fs.readFileSync('input.txt', 'utf-8')
-	const inputArray = data.split('\n')
-	return inputArray
-}
+const { readData } = require('../utils/helper')
 
 const data = readData()
 const total = []
@@ -57,7 +51,7 @@ const secondLevel = () => {
 		let lastNumber = parseInt(numbers[numbers.length - 1])
 		let firstDigitIndex = line.indexOf(numbers[0])
 		let lastDigitIndex = line.lastIndexOf(numbers[numbers.length - 1])
-		
+
 		const indices = allSpeltOutNumbers(line)
 		if (indices) {
 			indices.forEach((entry) => {
