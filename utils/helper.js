@@ -1,7 +1,7 @@
 const fs = require('fs')
 
-const readData = () => {
-	const data = fs.readFileSync('input.txt', 'utf-8')
+const readData = (fileName) => {
+	const data = fs.readFileSync(fileName, 'utf-8')
 	const inputArray = data.split('\n')
 	return inputArray
 }

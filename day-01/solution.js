@@ -1,6 +1,6 @@
 const { readData } = require('../utils/helper')
 
-const data = readData()
+const data = readData('input.txt')
 const total = []
 
 const firstLevel = () => {
