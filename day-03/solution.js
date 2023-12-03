@@ -146,7 +146,7 @@ const findDuplicatePairs = () => {
 const secondLevel = () => {
 	// console.log(possibleGears)
 	const validGears = findDuplicatePairs()
-	console.dir(validGears, { 'maxArrayLength': null })
+	// console.dir(validGears, { 'maxArrayLength': null })
 	const sumGearRatios = validGears.reduce((acc, value) => {
 		const gearRatio = value.numbers[0] * value.numbers[1]
 		return acc + gearRatio
