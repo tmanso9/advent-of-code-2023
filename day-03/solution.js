@@ -1,7 +1,7 @@
 const { readData } = require('../utils/helper')
 
 const data = readData('input.txt')
-let partNumbers = []
+const partNumbers = []
 const possibleGears = []
 const finalGears = []
 
@@ -12,71 +12,54 @@ const isSymbol = (letter) => {
 const isGear = (letter) => letter === '*'
 
 const checkValidPart = (line, startIndex, endIndex) => {
+	const returnStructure = (row, col) => {
+		return {
+			isValid: true,
+			isGear: {
+				isGear: isGear(data[row][col]),
+				row,
+				col
+			}
+		}
+	}
+
+	const foundInAdjacentLine = (row, col) => {
+		if (col >= 0 && col < data[row].length && isSymbol(data[row][col])) {
+			return true
+		}
+		return false
+	}
+
 	const prevLine = line - 1
-	let prevIndex = startIndex - 1
 	const nextLine = line + 1
-	let nextIndex = endIndex + 1
+	let prevIndex = startIndex - 1
+	const nextIndex = endIndex + 1
+
 	if (line >= 0) {
-		if (startIndex - 1 >= 0 && isSymbol(data[line][startIndex - 1])){
-			return {
-				isValid: true,
-				isGear: {
-					isGear: isGear(data[line][startIndex - 1]),
-					row: line,
-					col: startIndex - 1
-				}
-			}
+		// same line, previous char
+		if (prevIndex >= 0 && isSymbol(data[line][prevIndex])) {
+			return returnStructure(line, prevIndex)
 		}
-		if (endIndex + 1 < data[line].length &&
-				isSymbol(data[line][endIndex + 1])) {
-			return {
-				isValid: true,
-				isGear: {
-					isGear: isGear(data[line][endIndex + 1]),
-					row: line,
-					col: endIndex + 1
-				}
-			}
+		// same line, next char
+		if (nextIndex < data[line].length && isSymbol(data[line][nextIndex])) {
+			return returnStructure(line, nextIndex)
 		}
+		// all possible chars in previous line
 		if (prevLine >= 0) {
 			prevIndex = startIndex - 1
-			while (prevIndex <= nextIndex) {
-				if (
-					prevIndex >= 0 &&
-					prevIndex < data[prevLine].length &&
-					isSymbol(data[prevLine][prevIndex])
-				) {
-					return {
-						isValid: true,
-						isGear: {
-							isGear: isGear(data[prevLine][prevIndex]),
-							row: prevLine,
-							col: prevIndex
-						}
-					}
+			for (; prevIndex <= nextIndex; prevIndex++) {
+				if (foundInAdjacentLine(prevLine, prevIndex)) {
+					return returnStructure(prevLine, prevIndex)
 				}
-				prevIndex++
 			}
 		}
+		// all possible chars in next line
 		if (nextLine < data.length) {
 			prevIndex = startIndex - 1
-
-			while (prevIndex <= nextIndex) {
-				if (
-					prevIndex >= 0 &&
-					prevIndex < data[nextLine].length &&
-					isSymbol(data[nextLine][prevIndex])
-				) {
-					return {
-						isValid: true,
-						isGear: {
-							isGear: isGear(data[nextLine][prevIndex]),
-							row: nextLine,
-							col: prevIndex
-						}
-					}
+			for (; prevIndex <= nextIndex; prevIndex++) {
+				if (foundInAdjacentLine(nextLine, prevIndex)) {
+					return returnStructure(nextLine, prevIndex)
 				}
-				prevIndex++
 			}
 		}
 	}
@@ -91,7 +74,6 @@ for (let i = 0; i < data.length; i++) {
 	let startIndex = line.search(/\d/)
 	let endIndex
 	let acc = 0
-	// console.log(line)
 	while (startIndex != -1) {
 		const number = line.match(/\d+/)
 		acc += startIndex
@@ -151,7 +133,7 @@ const secondLevel = () => {
 		const gearRatio = value.numbers[0] * value.numbers[1]
 		return acc + gearRatio
 	}, 0)
-	
+
 	console.log(`Second level solution:\t${sumGearRatios}`)
 }
 
