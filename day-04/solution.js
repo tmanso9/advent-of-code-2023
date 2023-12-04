@@ -16,7 +16,7 @@ const points = []
 
 const processData = () => {
 	data.forEach((line) => {
-		const id = line.match(/\d+/)[0]
+		const id = Number(line.match(/\d+/)[0])
 		line = line.slice(line.indexOf(':') + 1)
 		const [winningNumbers, userNumbers] = line
 			.split('|')
@@ -24,7 +24,7 @@ const processData = () => {
 
 		allCards.push(
 			new ScratchCard(
-				parseInt(id),
+				id,
 				winningNumbers.sort((a, b) => a - b),
 				userNumbers,
 				0
@@ -48,9 +48,10 @@ function binarySearchRecursive(arr, target, left, right) {
 	return mid
 }
 
-const calcCardValue = (card) => {
+const calcMatchesAndValue = (card) => {
 	const cardValue = card.userNumbers.reduce((acc, number) => {
 		if (binarySearch(card.winningNumbers, number) != -1) {
+			card.matches++
 			return acc > 0 ? acc * 2 : 1
 		}
 		return acc
@@ -60,36 +61,20 @@ const calcCardValue = (card) => {
 }
 
 const firstLevel = () => {
-	allCards.forEach(calcCardValue)
+	allCards.forEach(calcMatchesAndValue)
 	const pointSum = points.reduce((acc, value) => acc + value, 0)
 	console.log('First level solution:\t', pointSum)
 }
 
-const calcCardCopies = (card) => {
-	card.matches = card.userNumbers.reduce((acc, number) => {
-		if (binarySearch(card.winningNumbers, number) != -1) {
-			return acc + 1
-		}
-		return acc
-	}, 0)
-}
-
 const createCopies = (card) => {
 	for (let i = 0; i < card.matches; i++) {
-		const original = allCards[card.id + i]
-		allCards.push(
-			new ScratchCard(
-				original.id,
-				original.winningNumbers,
-				original.userNumbers,
-				original.matches
-			)
-		)
+		const { id, winningNumbers, userNumbers, matches } =
+			allCards[card.id + i]
+		allCards.push(new ScratchCard(id, winningNumbers, userNumbers, matches))
 	}
 }
 
 const secondLevel = () => {
-	allCards.forEach(calcCardCopies)
 	for (const card of allCards) {
 		createCopies(card)
 	}
