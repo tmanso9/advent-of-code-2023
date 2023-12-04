@@ -3,10 +3,11 @@ const { readData } = require('../utils/helper')
 const data = readData('input.txt')
 
 class ScratchCard {
-	constructor(id, winningNumbers, userNumbers) {
+	constructor(id, winningNumbers, userNumbers, matches) {
 		this.id = id
 		this.winningNumbers = winningNumbers
 		this.userNumbers = userNumbers
+		this.matches = matches
 	}
 }
 
@@ -21,11 +22,14 @@ const processData = () => {
 			.split('|')
 			.map((part) => part.match(/\d+/g).map(Number))
 
-		allCards.push(new ScratchCard(
-			parseInt(id),
-			winningNumbers.sort((a, b) => a - b),
-			userNumbers
-		))
+		allCards.push(
+			new ScratchCard(
+				parseInt(id),
+				winningNumbers.sort((a, b) => a - b),
+				userNumbers,
+				0
+			)
+		)
 	})
 }
 
@@ -62,22 +66,32 @@ const firstLevel = () => {
 }
 
 const calcCardCopies = (card) => {
-	const matches = card.userNumbers.reduce((acc, number) => {
+	card.matches = card.userNumbers.reduce((acc, number) => {
 		if (binarySearch(card.winningNumbers, number) != -1) {
 			return acc + 1
 		}
 		return acc
 	}, 0)
+}
 
-	for (let i = 0; i < matches; i++) {
+const createCopies = (card) => {
+	for (let i = 0; i < card.matches; i++) {
 		const original = allCards[card.id + i]
-		allCards.push(new ScratchCard(original.id, original.winningNumbers, original.userNumbers))
+		allCards.push(
+			new ScratchCard(
+				original.id,
+				original.winningNumbers,
+				original.userNumbers,
+				original.matches
+			)
+		)
 	}
 }
 
 const secondLevel = () => {
-	for (card of allCards) {
-		calcCardCopies(card)
+	allCards.forEach(calcCardCopies)
+	for (const card of allCards) {
+		createCopies(card)
 	}
 	console.log('Second level solution:\t', allCards.length)
 }
