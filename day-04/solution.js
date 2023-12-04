@@ -17,15 +17,9 @@ const processData = () => {
 	data.forEach((line) => {
 		const id = line.match(/\d+/)[0]
 		line = line.slice(line.indexOf(':') + 1)
-		const parts = line.split('|')
-		const winningNumbers = []
-		parts[0].match(/\d+/g).forEach((number) => {
-			winningNumbers.push(parseInt(number))
-		})
-		const userNumbers = []
-		parts[1].match(/\d+/g).forEach((number) => {
-			userNumbers.push(parseInt(number))
-		})
+		const [winningNumbers, userNumbers] = line
+			.split('|')
+			.map((part) => part.match(/\d+/g).map(Number))
 
 		allCards.push(new ScratchCard(
 			parseInt(id),
