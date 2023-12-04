@@ -28,7 +28,7 @@ const processData = () => {
 		})
 
 		allCards.push(new ScratchCard(
-			id,
+			parseInt(id),
 			winningNumbers.sort((a, b) => a - b),
 			userNumbers
 		))
@@ -67,5 +67,27 @@ const firstLevel = () => {
 	console.log('First level solution:\t', pointSum)
 }
 
+const calcCardCopies = (card) => {
+	const matches = card.userNumbers.reduce((acc, number) => {
+		if (binarySearch(card.winningNumbers, number) != -1) {
+			return acc + 1
+		}
+		return acc
+	}, 0)
+
+	for (let i = 0; i < matches; i++) {
+		const original = allCards[card.id + i]
+		allCards.push(new ScratchCard(original.id, original.winningNumbers, original.userNumbers))
+	}
+}
+
+const secondLevel = () => {
+	for (card of allCards) {
+		calcCardCopies(card)
+	}
+	console.log('Second level solution:\t', allCards.length)
+}
+
 processData()
 firstLevel()
+secondLevel()
