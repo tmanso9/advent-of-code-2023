@@ -2,27 +2,58 @@ const { readData } = require('../utils/helper')
 
 const data = readData('input.txt')
 
-console.log(data)
-
-const time = data.shift().split(':')[1].trim().match(/\d+/g).map(Number)
-const distance = data.shift().split(':')[1].trim().match(/\d+/g).map(Number)
-
-const waysToWin = []
-
-for (let i = 0; i < time.length; i++) {
-	const raceTime = time[i]
-	const recordDistance = distance[i]
-	// console.log(raceTime, recordDistance)
-	let winningOptions = 0
+const calcRaceOutput = (raceTime, recordDistance) => {
+	let wins = 0
 	for (let j = 0; j < raceTime; j++) {
 		const remainingTime = raceTime - j
 		const points = remainingTime * j
-		// console.log(points)
-		if (points > recordDistance) winningOptions++
+		if (points > recordDistance) wins++
 	}
-	waysToWin.push(winningOptions)
+	return wins
 }
 
-// console.log(waysToWin)
-const totalWays = waysToWin.reduce((acc, val) => acc * val, 1)
-console.log(`There are ${totalWays} ways to win`)
+const allRaces = (time, distance) => {
+	for (let i = 0; i < time.length; i++) {
+		const raceTime = time[i]
+		const recordDistance = distance[i]
+		let winningOptions = calcRaceOutput(raceTime, recordDistance)
+		waysToWin.push(winningOptions)
+	}
+	return waysToWin.reduce((acc, val) => acc * val, 1)
+}
+
+const calcAndPrint = (level) => {
+	totalWays = allRaces(time, distance)
+	console.log(`${level} level solution:\t${totalWays}`)
+}
+
+const firstLevel = (data) => {
+	time = data.shift().split(':')[1].trim().match(/\d+/g).map(Number)
+	distance = data.shift().split(':')[1].trim().match(/\d+/g).map(Number)
+
+	calcAndPrint('First')
+}
+
+const secondLevel = (data) => {
+	time = [parseInt(data.shift().split(':')[1].trim().replaceAll(' ', ''))]
+	distance = [parseInt(data.shift().split(':')[1].trim().replaceAll(' ', ''))]
+
+	calcAndPrint('Second')
+}
+
+const clonedData = [...data]
+const waysToWin = []
+let totalWays = 0
+let time = []
+let distance = []
+
+const initVariables = () => {
+	waysToWin.length = 0
+	time.length = 0
+	distance.length = 0
+	totalWays = 0
+}
+
+firstLevel(data)
+initVariables()
+secondLevel(clonedData)
