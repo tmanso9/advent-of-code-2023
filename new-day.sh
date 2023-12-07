@@ -18,5 +18,12 @@ else
 	touch "day-$day/solution.js"
 	touch "day-$day/sample.txt"
 	touch "day-$day/input.txt"
+	solutionJSContents=$(cat day-${day}/solution.js)
+	if [ -z "$solutionJSContents" ]; then
+		echo "const { readData } = require('../utils/helper')" >> "day-$day/solution.js"
+		echo "" >> "day-$day/solution.js"
+		echo "const data = readData('sample.txt')" >> "day-$day/solution.js"
+	fi
+
 	echo "All done!"
 fi
