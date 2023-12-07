@@ -3,29 +3,22 @@ const { readData } = require('../utils/helper')
 const data = readData('input.txt')
 
 const TYPES = {
-	FIVE: 6,
-	FOUR: 5,
-	FULL: 4,
-	THREE: 3,
-	TWO: 2,
-	ONE: 1,
-	HIGH: 0
+	FIVE_OF_A_KIND: 6,
+	FOUR_OF_A_KIND: 5,
+	FULL_HOUSE: 4,
+	THREE_OF_A_KIND: 3,
+	TWO_PAIRS: 2,
+	ONE_PAIR: 1,
+	HIGH_CARD: 0
 }
 
 class Hand {
 	constructor(cards, bid) {
 		this.cards = cards
 		this.bid = bid
-		this.type = TYPES.HIGH
+		this.type = TYPES.HIGH_CARD
 		this.cardsAmount = []
 	}
-}
-
-const hands = []
-
-for (const line of data) {
-	const [cards, bid] = line.split(' ')
-	hands.push(new Hand(cards, parseInt(bid)))
 }
 
 const mapHands = (hand) => {
@@ -41,32 +34,36 @@ const checkType = (hand) => {
 	mapHands(hand)
 
 	hand.cardsAmount = Array.from(cards).sort((a, b) => b[1] - a[1])
-	// console.log(hand.cardsAmount)
 
-	switch (hand.cardsAmount[0][1]) {
-		case 5:
-			hand.type = TYPES.FIVE
-			break
-		case 4:
-			hand.type = TYPES.FOUR
-			break
-		case 3:
-			if (hand.cardsAmount[1][1] === 2) {
-				hand.type = TYPES.FULL
-			} else {
-				hand.type = TYPES.THREE
-			}
-			break
-		case 2:
-			if (hand.cardsAmount[1][1] === 2) {
-				hand.type = TYPES.TWO
-			} else {
-				hand.type = TYPES.ONE
-			}
-			break
-		default:
-			hand.type = TYPES.HIGH
-	}
+	const mostCommon = hand.cardsAmount[0][1]
+	const secondMostCommon =
+		hand.cardsAmount.length > 1 ?
+		hand.cardsAmount[1][1] :
+		0
+
+		switch (mostCommon) {
+			case 5:
+				hand.type = TYPES.FIVE_OF_A_KIND
+				break
+			case 4:
+				hand.type = TYPES.FOUR_OF_A_KIND
+				break
+			case 3:
+				hand.type =
+					secondMostCommon === 2
+						? TYPES.FULL_HOUSE
+						: TYPES.THREE_OF_A_KIND
+				break
+			case 2:
+				hand.type =
+					secondMostCommon === 2
+						? TYPES.TWO_PAIRS
+						: TYPES.ONE_PAIR
+				break
+			default:
+				hand.type = TYPES.HIGH_CARD
+				break
+		}
 }
 
 const checkTypeWithJoker = (hand) => {
@@ -74,90 +71,55 @@ const checkTypeWithJoker = (hand) => {
 	mapHands(hand)
 
 	hand.cardsAmount = Array.from(cards).sort((a, b) => b[1] - a[1])
-	// console.log(hand.cardsAmount)
 
 	const jokers = cards.get('J') || 0
-
 	const cardsWithoutJoker = hand.cardsAmount.filter((card) => card[0] !== 'J')
-	// console.log(`Without joker:`)
-	// console.log(cardsWithoutJoker)
-	// console.log(`jokers: ${jokers}`)
 
+	/*
+	This code block is determining the type of hand based on the cards in the hand and the presence of
+	jokers.
+	Above each line there is an example of a valid hand for each case.
+	*/
 	if (cardsWithoutJoker && cardsWithoutJoker.length) {
-		switch (cardsWithoutJoker[0][1]) {
-			case 5:
-				hand.type = TYPES.FIVE
-				break
-			case 4:
-				if (jokers === 1) hand.type = TYPES.FIVE
-				else hand.type = TYPES.FOUR
-				break
-			case 3:
-				switch (jokers) {
-					case 2:
-						hand.type = TYPES.FIVE
-						break
-					case 1:
-						hand.type = TYPES.FOUR
-						break
-					default:
-						if (cardsWithoutJoker[1][1] === 2) {
-							hand.type = TYPES.FULL
-						} else {
-							hand.type = TYPES.THREE
-						}
-				}
-				break
-			case 2:
-				switch (jokers) {
-					case 3:
-						hand.type = TYPES.FIVE
-						break
-					case 2:
-						hand.type = TYPES.FOUR
-						break
-					case 1:
-						if (cardsWithoutJoker[1][1] === 2) {
-							hand.type = TYPES.FULL
-						} else {
-							hand.type = TYPES.THREE
-						}
-						break
-					default:
-						if (cardsWithoutJoker[1][1] === 2) {
-							hand.type = TYPES.TWO
-						} else {
-							hand.type = TYPES.ONE
-						}
-					}
-				break
-			default:
-				switch (jokers) {
-					case 4:
-						hand.type = TYPES.FIVE
-						break
-					case 3:
-						hand.type = TYPES.FOUR
-						break
-					case 2:
-						hand.type = TYPES.THREE
-						break
-					case 1:
-						hand.type = TYPES.ONE
-						break
-					default:
-						hand.type = TYPES.HIGH
-				}
-		}
+		const mostCommon = cardsWithoutJoker[0][1]
+		const secondMostCommon =
+			cardsWithoutJoker.length > 1 ?
+			cardsWithoutJoker[1][1] :
+			0
+
+		hand.type = 
+			//AAAAA
+			mostCommon === 5 ? TYPES.FIVE_OF_A_KIND :
+			//AAAAJ || AAAAK
+			mostCommon === 4 ? TYPES.FOUR_OF_A_KIND + jokers :
+			//AAAJJ || AAAJK || AAAKK || AAAK9
+			mostCommon === 3 ?
+				jokers === 2 ? TYPES.FIVE_OF_A_KIND :
+				jokers === 1 ? TYPES.FOUR_OF_A_KIND :
+				secondMostCommon === 2 ? TYPES.FULL_HOUSE : TYPES.THREE_OF_A_KIND
+				:
+			//AAJJJ || AAJJK || AAJKK || AAJK9 || AAKK9 || AAK95
+			mostCommon === 2 ?
+				jokers === 3 ? TYPES.FIVE_OF_A_KIND :
+				jokers === 2 ? TYPES.FOUR_OF_A_KIND :
+				jokers === 1 ? (secondMostCommon === 2 ? TYPES.FULL_HOUSE : TYPES.THREE_OF_A_KIND) :
+				(secondMostCommon === 2 ? TYPES.TWO_PAIRS : TYPES.ONE_PAIR)
+				:
+			//JJJJA
+			jokers === 4 ? TYPES.FIVE_OF_A_KIND :
+			//JJJAK
+			jokers === 3 ? TYPES.FOUR_OF_A_KIND :
+			//JJAK9
+			jokers === 2 ? TYPES.THREE_OF_A_KIND :
+			//JAK95
+			jokers === 1 ? TYPES.ONE_PAIR :
+			//AK952
+			TYPES.HIGH_CARD
 	} else {
-		// console.log('aqui')
-		hand.type = TYPES.FIVE
+		//JJJJJ
+		hand.type = TYPES.FIVE_OF_A_KIND
 	}
-
-	// console.log(hand.type)
 }
-
-let totalWinnings = 0
 
 const orderedByStrength = (strength) => {
 	const orderedHands = hands.sort((a, b) => {
@@ -202,6 +164,14 @@ const secondLevel = () => {
 	calcStrengthAndPrint(strengthWithJoker, 'Second')
 }
 
+const hands = []
+
+for (const line of data) {
+	const [cards, bid] = line.split(' ')
+	hands.push(new Hand(cards, parseInt(bid)))
+}
+
+let totalWinnings = 0
 const cards = new Map()
 
 firstLevel()
