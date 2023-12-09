@@ -5,13 +5,13 @@ Advent of Code is an annual coding event where participants solve a series of pr
 
 ## Structure
 
-The repository is organized by days, with each day's `solution.js` containing the code for both parts of the corresponding puzzle. Additionally, you'll find the input files required for each day's challenge.
+The repository is organized by days, with each day's `solution.js` containing the code for both parts of the corresponding puzzle. Additionally, you'll find the sample input given in each day's challenge.
 
 |-- day-01  
-| |-- input.txt  
+| |-- sample.txt  
 | |-- solution.js  
 |-- day-02  
-| |-- input.txt  
+| |-- sample.txt  
 | |-- solution.js  
 |-- ...  
 
