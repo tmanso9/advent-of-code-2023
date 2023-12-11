@@ -6,4 +6,11 @@ const readData = (fileName) => {
 	return inputArray
 }
 
-module.exports = { readData }
+const printMap = (toPrint) => {
+	toPrint.forEach((row) => {
+		const values = row.reduce((acc, val) => acc + val, '')
+		console.log(values)
+	})
+}
+
+module.exports = { readData, printMap }
