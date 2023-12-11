@@ -4,45 +4,29 @@ const data = readData('input.txt')
 
 const galaxyMap = []
 
-for (line of data) {
+const linesWithoutGalaxies = []
+data.forEach((line, i) => {
 	galaxyMap.push(Array.from(line))
 	if (!line.includes('#')) {
-		galaxyMap.push(Array.from(line))
+		linesWithoutGalaxies.push(i)
 	}
-}
+})
 
 const colsWithoutGalaxies = []
+const positions = []
 
 for (let x = 0; x < galaxyMap[0].length; x++) {
 	let galaxiesFound = 0
 	for (let i = 0; i < galaxyMap.length; i++) {
 		if (galaxyMap[i][x] === '#') {
 			galaxiesFound++
-			break
+			positions.push({ y: i, x })
 		}
 	}
 	if (!galaxiesFound) colsWithoutGalaxies.push(x)
 }
 
-let colsAdded = 0
-colsWithoutGalaxies.forEach((val) => {
-	galaxyMap.forEach((row) => {
-		row.splice(val + colsAdded, 0, '.')
-	})
-	colsAdded++
-})
-
-const positions = []
-
-for (let y = 0; y < galaxyMap.length; y++) {
-	for (let x = 0; x < galaxyMap[0].length; x++) {
-		if (galaxyMap[y][x] === '#') {
-			positions.push({ y, x })
-		}
-	}
-}
-
-const minDistance = async (pos, dest) => {
+const minDistance = async (pos, dest, sumValue) => {
 	const queue = []
 	let visited = Array(galaxyMap.length)
 	for (let y = 0; y < galaxyMap.length; y++) {
@@ -67,7 +51,7 @@ const minDistance = async (pos, dest) => {
 			{ y: current.y, x: current.x + 1 }
 		]
 
-		for (const neighbor of neighbors) {
+		neighbors.forEach((neighbor, i) => {
 			const { y, x } = neighbor
 
 			if (
@@ -77,30 +61,37 @@ const minDistance = async (pos, dest) => {
 				x < galaxyMap[y].length &&
 				!visited[y][x]
 			) {
+				let added = 0
+				switch(i){
+					case 0:
+					case 1:
+						if (linesWithoutGalaxies.includes(y)) added = sumValue - 1
+						break
+					case 2:
+					case 3:
+						if (colsWithoutGalaxies.includes(x)) added = sumValue - 1
+						break
+				}
 				queue.push({
 					y,
 					x,
-					dist: current.dist + 1
+					dist: current.dist + 1 + added
 				})
 				visited[y][x] = true
 			}
-		}
+		})
 	}
 	return -1
 }
 
-const sumNaturalNumbers = (num) => (num * (num + 1)) / 2
-
-const shortestPaths = Array(sumNaturalNumbers(positions.length))
-
-const calculateShortestPaths = async () => {
+const calculateShortestPaths = async (sumValue) => {
 	const promises = []
 
 	positions.forEach((pos, i) => {
 		console.log(`${((i / positions.length) * 100).toFixed(2)} %`)
 		for (let z = i + 1; z < positions.length; z++) {
 			const dest = positions[z]
-			promises.push(minDistance(pos, dest))
+			promises.push(minDistance(pos, dest, sumValue))
 		}
 	})
 
@@ -108,7 +99,17 @@ const calculateShortestPaths = async () => {
 }
 
 const firstLevel = () => {
-	calculateShortestPaths().then((promises) => {
+	calculateShortestPaths(2).then((promises) => {
+		Promise.all(promises).then((shortestPaths) => {
+			console.log(
+				'First level solution:\t',
+				shortestPaths.reduce((acc, val) => acc + val)
+			)
+		})
+	})
+}
+const secondLevel = () => {
+	calculateShortestPaths(1000000).then((promises) => {
 		Promise.all(promises).then((shortestPaths) => {
 			console.log(
 				'First level solution:\t',
@@ -119,3 +120,4 @@ const firstLevel = () => {
 }
 
 firstLevel()
+secondLevel()
