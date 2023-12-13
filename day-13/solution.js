@@ -53,9 +53,82 @@ const firstLevel = () => {
 	console.log('First level solution:\t', res)
 }
 
+const findDiffInStrings = (s1, s2) => {
+	// console.log(`comparing ${s1} and ${s2}`)
+	let diff = 0
+	for (let i = 0; i < s1.length; i++) {
+		if (s1[i] !== s2[i]) diff++
+	}
+	// console.log(`diff is ${diff}`)
+	return diff
+}
+
+const validMirrorWithSmudges = (line, startIndex) => {
+	let isValidMirror = true
+	let smudges = startIndex ? 0 : 1
+	for (let offset = 1; offset <= startIndex; offset++) {
+		if (
+			(startIndex && startIndex - offset < 0) ||
+			startIndex + 1 + offset >= line.length
+		) {
+			break
+		}
+		// console.log(`line is ${line[startIndex - offset]}`)
+		const diff = findDiffInStrings(
+			line[startIndex - offset],
+			line[startIndex + 1 + offset]
+		)
+		// console.log(diff)
+		if (diff === 1) {
+			smudges++
+		}
+		if (
+			line[startIndex - offset] !== line[startIndex + 1 + offset] &&
+			smudges !== 1
+		) {
+			isValidMirror = false
+			break
+		}
+	}
+	return isValidMirror && smudges === 1
+}
+
 const secondLevel = () => {
+	res = 0
+	data.forEach((pattern) => {
+		let rows = pattern.split('\n')
+
+		let transposed = []
+		for (let y in rows) {
+			for (let x in rows[y]) {
+				transposed[x] = transposed[x] || ''
+				transposed[x] += rows[y][x]
+			}
+		}
+
+		res += checkMirrors(rows, 100)
+		res += checkMirrors(transposed, 1)
+
+		function checkMirrors(input, multiplier) {
+			for (let i = 0; i < input.length - 1; i++) {
+				let diff = 0
+
+				for (let j = 0; j <= Math.min(i, input.length - i - 2); j++)
+					diff += input[i - j]
+						.split('')
+						.filter(
+							(char, index) => char !== input[i + 1 + j][index]
+						).length
+
+				if (diff === 1) {
+					return (i + 1) * multiplier
+				}
+			}
+			return 0
+		}
+	})
+
 	console.log('Second level solution:\t', res)
 }
 
-firstLevel()
-// secondLevel()
+secondLevel()
