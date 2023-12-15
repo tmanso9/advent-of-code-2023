@@ -22,44 +22,34 @@ const firstLevel = () => {
 
 const secondLevel = () => {
 	res = 0
-	let boxes = []
+	const boxes = Array.from({ length: 256 }, () => [])
+
 	input.forEach((val) => {
-		const sep = val.match(/[=-]/)
-		const label = val.substr(0, sep.index)
-		const op = sep[0]
-		const modifier = val.substr(sep.index + 1)
+		const [label, op, modifier] = val
+			.match(/([^=-]+)([=-])([^=-]*)/)
+			.slice(1)
 		const labelBox = hash(label)
-		const alreadyHasIt = boxes[labelBox]
-			? boxes[labelBox].find((val) => {
-					return val.label === label
-			  })
-			: false
+		const lensExists = boxes[labelBox].find((val) => val.label === label)
+
 		switch (op) {
 			case '=':
-				if (!boxes[labelBox]) boxes[labelBox] = []
-				if (alreadyHasIt) {
-					alreadyHasIt.val = modifier
+				if (lensExists) {
+					lensExists.val = modifier
 				} else {
 					boxes[labelBox].push({ label, val: modifier })
 				}
 				break
 			case '-':
-				if (!boxes[labelBox]) break
-				if (alreadyHasIt) {
-					const i = boxes[labelBox].indexOf(alreadyHasIt)
-					boxes[labelBox] = boxes[labelBox]
-						.slice(0, i)
-						.concat(boxes[labelBox].slice(i + 1))
-				}
+				boxes[labelBox] = boxes[labelBox].filter(
+					(val) => val !== lensExists
+				)
 		}
 	})
 
 	boxes.forEach((box, i) => {
-		if (!box.length) return
 		let acc = 0
 		box.forEach((elem, x) => {
-			let elemTotal = x + 1
-			elemTotal *= elem.val
+			let elemTotal = (x + 1) * elem.val
 			acc += (i + 1) * elemTotal
 		})
 		res += acc
