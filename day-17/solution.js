@@ -1,5 +1,4 @@
-const { readData, printMap, DIR } = require('../utils/helper')
-const { PriorityQueue } = require('../utils/PriorityQueue')
+const { readData, printMap, PriorityQueue } = require('../utils')
 
 class heatPriorityQueue extends PriorityQueue {
 	parent(index) {
@@ -96,7 +95,7 @@ const dijkstra = (input, min, max) => {
 		}
 		
 		if (steps && steps < min) continue
-		
+
 		const possibleDirections = [
 			[0, 1],
 			[0, -1],

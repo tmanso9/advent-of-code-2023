@@ -20,7 +20,7 @@ else
 	touch "day-$day/input.txt"
 	solutionJSContents=$(cat day-${day}/solution.js)
 	if [ -z "$solutionJSContents" ]; then
-		echo "const { readData, printMap } = require('../utils/helper')" >> "day-$day/solution.js"
+		echo "const { readData, printMap, PriorityQueue } = require('../utils')" >> "day-$day/solution.js"
 		echo "" >> "day-$day/solution.js"
 		echo "const data = readData('sample.txt')" >> "day-$day/solution.js"
 		echo "" >> "day-$day/solution.js"
