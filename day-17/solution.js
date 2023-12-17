@@ -1,18 +1,23 @@
 const { readData, printMap, PriorityQueue } = require('../utils')
 
 class heatPriorityQueue extends PriorityQueue {
+	// Returns the heat loss value of the parent node in a heap data structure.
 	parent(index) {
 		return this.heap[this.getParentIndex(index)].heatLoss
 	}
 
+	// Returns the heat loss value of the left child node in a heap data structure.
 	leftChild(index) {
 		return this.heap[this.getLeftChildIndex(index)].heatLoss
 	}
 
+	// Returns the heat loss value of the right child node in a heap data structure.
 	rightChild(index) {
 		return this.heap[this.getRightChildIndex(index)].heatLoss
 	}
 
+	// Maintains the heap property by moving an element up the heap
+	// until its parent is smaller than it.
 	heapifyUp() {
 		let index = this.heap.length - 1
 		while (
@@ -55,6 +60,18 @@ class heatPriorityQueue extends PriorityQueue {
 	}
 }
 
+/**
+ * The `dijkstra` function implements Dijkstra's algorithm to find the minimum heat loss path in a
+ * grid, given a minimum and maximum number of steps.
+ * @param input - The `input` parameter is a 2D array representing a grid. Each element in the array
+ * represents the heat loss at that position in the grid.
+ * @param min - The `min` parameter in the `dijkstra` function represents the minimum number of steps
+ * required in one direction to reach the destination and before being able to turn in another direction.
+ * @param max - The `max` parameter represents the maximum number of steps that can be taken in any
+ * direction from a given position.
+ * @returns the heat loss value if the destination is reached and the number of steps is greater than
+ * or equal to the minimum number of steps required. Otherwise, it returns -1.
+ */
 const dijkstra = (input, min, max) => {
 	const seen = new Set()
 	const pq = new heatPriorityQueue()
@@ -127,8 +144,8 @@ const dijkstra = (input, min, max) => {
 			}
 		}
 	}
-	console.log(seen)
-	return 0
+	console.log('Could not find a path')
+	return -1
 }
 
 const processData = (data) => {
@@ -143,12 +160,16 @@ const processData = (data) => {
 }
 
 const firstLevel = (input) => {
-	const res = dijkstra(input, 0, 3)
+	const minSteps = 0
+	const maxSteps = 3
+	const res = dijkstra(input, minSteps, maxSteps)
 	console.log('First level solution:\t', res)
 }
 
 const secondLevel = (input) => {
-	const res = dijkstra(input, 4, 10)
+	const minSteps = 4
+	const maxSteps = 10
+	const res = dijkstra(input, minSteps, maxSteps)
 	console.log('Second level solution:\t', res)
 }
 
