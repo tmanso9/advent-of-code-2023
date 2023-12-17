@@ -1,6 +1,5 @@
 const { readData, printMap, DIR } = require('../utils/helper')
 const { PriorityQueue } = require('../utils/PriorityQueue')
-const data = readData('input.txt')
 
 class heatPriorityQueue extends PriorityQueue {
 	parent(index) {
@@ -17,7 +16,10 @@ class heatPriorityQueue extends PriorityQueue {
 
 	heapifyUp() {
 		let index = this.heap.length - 1
-		while (this.hasParent(index) && this.parent(index) > this.heap[index].heatLoss) {
+		while (
+			this.hasParent(index) &&
+			this.parent(index) > this.heap[index].heatLoss
+		) {
 			this.swap(this.getParentIndex(index), index)
 			index = this.getParentIndex(index)
 		}
@@ -54,9 +56,7 @@ class heatPriorityQueue extends PriorityQueue {
 	}
 }
 
-let res = 0
-
-const dijkstra = (input) => {
+const dijkstra = (input, min, max) => {
 	const seen = new Set()
 	const pq = new heatPriorityQueue()
 	pq.add({ heatLoss: 0, row: 0, col: 0, dirRow: 0, dirCol: 0, steps: 0 })
@@ -65,14 +65,18 @@ const dijkstra = (input) => {
 		const { heatLoss, row, col, dirRow, dirCol, steps } = pq.remove()
 		const storePosition = `[${row}][${col}], (${dirRow})(${dirCol}), ${steps}`
 
-		if (row === input.length - 1 && col === input[row].length - 1) {
+		if (
+			row === input.length - 1 &&
+			col === input[row].length - 1 &&
+			steps >= min
+		) {
 			return heatLoss
 		}
 
 		if (seen.has(storePosition)) continue
 		seen.add(storePosition)
 
-		if (steps < 3 && !(dirRow === 0 && dirCol === 0)) {
+		if (steps < max && !(dirRow === 0 && dirCol === 0)) {
 			newRow = row + dirRow
 			newCol = col + dirCol
 			if (
@@ -90,7 +94,9 @@ const dijkstra = (input) => {
 					steps: steps + 1
 				})
 		}
-
+		
+		if (steps && steps < min) continue
+		
 		const possibleDirections = [
 			[0, 1],
 			[0, -1],
@@ -126,7 +132,7 @@ const dijkstra = (input) => {
 	return 0
 }
 
-const firstLevel = () => {
+const processData = (data) => {
 	const input = []
 	data.forEach((line, y) => {
 		if (line.length) {
@@ -134,15 +140,24 @@ const firstLevel = () => {
 		}
 	})
 
-	// console.log(input)
-	res = dijkstra(input)
+	return input
+}
 
+const firstLevel = (input) => {
+	const res = dijkstra(input, 0, 3)
 	console.log('First level solution:\t', res)
 }
 
-const secondLevel = () => {
+const secondLevel = (input) => {
+	const res = dijkstra(input, 4, 10)
 	console.log('Second level solution:\t', res)
 }
 
-firstLevel()
-// secondLevel()
+const main = () => {
+	const data = readData('input.txt')
+	const input = processData(data)
+	firstLevel(input)
+	secondLevel(input)
+}
+
+main()
