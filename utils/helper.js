@@ -13,4 +13,11 @@ const printMap = (toPrint) => {
 	})
 }
 
-module.exports = { readData, printMap }
+const DIR = {
+	left: { y: 0, x: -1 },
+	right: { y: 0, x: 1 },
+	up: { y: -1, x: 0 },
+	down: { y: 1, x: 0 }
+}
+
+module.exports = { readData, printMap, DIR }
