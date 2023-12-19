@@ -5,10 +5,10 @@ const data = readData('input.txt')
 let res = 0
 
 const dirs = {
-	U: { y: -1, x: 0 },
+	R: { y: 0, x: 1 },
 	D: { y: 1, x: 0 },
 	L: { y: 0, x: -1 },
-	R: { y: 0, x: 1 }
+	U: { y: -1, x: 0 }
 }
 
 const shoeLaceFormula = (digs) => {
@@ -42,9 +42,7 @@ const firstLevel = () => {
 		boundaryPoints += steps
 		digs.push({y: y + dir.y * steps, x: x + dir.x * steps})
 	})
-	// console.log(digs)
 	const area = shoeLaceFormula(digs)
-	// console.log(area, boundaryPoints)
 	const interiorArea = picksTheorem(area, boundaryPoints)
 	res = boundaryPoints + interiorArea
 
@@ -52,8 +50,23 @@ const firstLevel = () => {
 }
 
 const secondLevel = () => {
+	let digs = [{y: 0, x: 0}]
+	let boundaryPoints = 0
+	data.forEach(line => {
+		const hexa = line.split(' ')[2].substring(1).replace(/[#)]/g, '')
+		const dir = Object.values(dirs)[parseInt(hexa[5])]
+		const steps = parseInt(hexa.substring(0, 5), 16)
+		const y = digs[digs.length - 1].y
+		const x = digs[digs.length - 1].x
+		boundaryPoints += steps
+		digs.push({ y: y + dir.y * steps, x: x + dir.x * steps })
+	})
+
+	const area = shoeLaceFormula(digs)
+	const interiorArea = picksTheorem(area, boundaryPoints)
+	res = boundaryPoints + interiorArea
 	console.log('Second level solution:\t', res)
 }
 
-firstLevel()
-// secondLevel()
+// firstLevel()
+secondLevel()
