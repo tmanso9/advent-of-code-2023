@@ -28,6 +28,7 @@ const firstLevel = () => {
 					.splice(1)
 				final = false
 				// console.log(part, op, right, dest)
+				right = parseInt(right)
 				compareFn = new Function('part', `return part ${op} ${right}`)
 			}
 			rules.push({ final, dest, compareFn, part })
@@ -55,11 +56,9 @@ const firstLevel = () => {
 		queue.push(workflows.get('in'))
 		while (queue.length && !rejected && !ratingOk) {
 			const curr = queue.shift()
-			// console.log(curr)
 			for (const rule of curr) {
-				// console.log(rule)
+				if (ratingOk || queue.length || rejected) break
 				if (rule.final) {
-					// console.log('final')
 					if (rule.dest === 'A') {
 						if (!accepted.includes(rating)) {
 							accepted.push(rating)
@@ -72,8 +71,6 @@ const firstLevel = () => {
 					}
 				} else {
 					if (rule.compareFn(rating[rule.part]) === true) {
-						// console.log(rating)
-						// console.log(rule)
 						if (rule.dest === 'A') {
 							if (!accepted.includes(rating)) {
 								accepted.push(rating)
@@ -86,14 +83,12 @@ const firstLevel = () => {
 						}
 					}
 				}
-				if (queue.length) break
 			}
 		}
 	})
-	// console.log(accepted)
-	accepted.forEach((rating) => {
-		res += rating.x + rating.m + rating.a + rating.s
-	})
+	res = accepted.reduce((acc, val) => {
+		return acc + val.x + val.m + val.a + val.s
+	}, 0)
 	console.log('First level solution:\t', res)
 }
 
