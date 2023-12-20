@@ -1,4 +1,4 @@
-const { readData, printMap, DIR, PriorityQueue } = require('../utils')
+const { readData, printMap, DIR, PriorityQueue, LCM } = require('../utils')
 
 const data = readData('input.txt')
 
@@ -92,7 +92,8 @@ const setInputs = (name, modules) => {
 	}
 }
 
-const buildModules = () => {
+const allConjToFeed = []
+const buildModules = (secondLevel = false) => {
 	const modules = new Map()
 	data.forEach((line) => {
 		let [left, right] = line.split(' -> ')
@@ -104,10 +105,22 @@ const buildModules = () => {
 		const newMod = createModule(name, type, dest)
 		modules.set(name, newMod)
 	})
+	let feed = ''
+	if (secondLevel) {
+		for (const module of modules.values()) {
+			const dest = module.dest
+			dest.forEach((d) => {
+				if (d === 'rx') feed = module.name
+			})
+		}
+	}
 	for (const module of modules.values()) {
 		const dest = module.dest
 		dest.forEach((d) => {
 			if (!modules.has(d)) modules.set(d, createModule(d, 'generic', []))
+			if (secondLevel) {
+				if (d === feed) allConjToFeed.push({ name: module.name, val: 0 })
+			}
 		})
 		if (module instanceof Conjunction) {
 			setInputs(module.name, modules)
@@ -127,7 +140,8 @@ const allModulesOff = (modules) => {
 	return allOff
 }
 
-const firstLevel = (modules) => {
+const firstLevel = () => {
+	const modules = buildModules()
 	let hiSent = 0,
 		loSent = 0
 	let i = 0
@@ -145,20 +159,41 @@ const firstLevel = (modules) => {
 }
 
 const secondLevel = () => {
+	const modules = buildModules(true)
+	res = 0
+	const seen = new Map()
+	allConjToFeed.forEach((val) => {
+		seen.set(val.name, 0)
+	})
 	let i = 0
-	let loSentToRx = false
-	while (!loSentToRx || !i){
+	while (1) {
 		const queue = [{ mod: 'broadcaster', pulse: 'lo', source: 'button' }]
 		i++
 		while (queue.length) {
 			const curr = queue.shift()
-			loSentToRx = loSentToRx ? loSentToRx : curr.pulse === 'lo' && curr.mod === 'rx'
+			if (curr.mod === 'gq' && curr.pulse === 'hi') {
+				const before = seen.get(curr.source)
+				seen.set(curr.source, before + 1)
+				const id = allConjToFeed.findIndex((elem) => elem.name === curr.source)
+				allConjToFeed[id].val = i
+				let allSeenEnoughTimes = true
+				for (val of seen.values()) {
+					if (val < 1) allSeenEnoughTimes = false
+				}
+				if (allSeenEnoughTimes) {
+					const finalVals = []
+					for (const entry of allConjToFeed.values()) {
+						finalVals.push(entry.val)
+					}
+					res = LCM(finalVals, finalVals.length)
+					console.log('Second level solution:\t', res)
+					return
+				}
+			}
 			modules.get(curr.mod).action(curr.pulse, queue, curr.source)
 		}
 	}
-	console.log('Second level solution:\t', i)
 }
 
-const modules = buildModules()
-firstLevel(modules)
-// secondLevel(modules)
+firstLevel()
+secondLevel()
