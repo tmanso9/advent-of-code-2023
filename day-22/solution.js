@@ -1,16 +1,11 @@
 const { readData, printMap, DIR, LCM, PriorityQueue } = require('../utils')
 
-const data = readData('input.txt')
-
 class Brick {
 	constructor(start, end) {
 		this.start = start
 		this.end = end
 	}
 }
-
-let res = 0
-let bricks = []
 
 const sortBricks = (a, b) => a.start[2] - b.start[2]
 
@@ -21,14 +16,18 @@ const overlaps = (a, b) => {
 	)
 }
 
-const firstLevel = () => {
+const buildBricksFromData = (data) => {
+	let bricks = []
 	data.forEach((line, i) => {
-		if (line.length){
+		if (line.length) {
 			const [start, end] = line.split('~').map((val) => val.split(',').map(Number))
 			bricks.push(new Brick(start, end))
 		}
 	})
-	bricks.sort(sortBricks)
+	return bricks
+}
+
+const dropBricks = (bricks) => {
 	bricks.forEach((brick, i) => {
 		let maxZ = 1
 		for (let x = 0; x < i; x++) {
@@ -41,8 +40,16 @@ const firstLevel = () => {
 		brick.start[2] = maxZ
 		brick.end[2] = maxZ + diff
 	})
-	bricks.sort(sortBricks)
+}
 
+const buildAndDrop = (data) => {
+	let bricks = buildBricksFromData(data)
+	bricks.sort(sortBricks)
+	dropBricks(bricks)
+	return bricks
+}
+
+const buildRelationships = (bricks) => {
 	const holds = {}
 	const heldBy = {}
 	bricks.forEach((brick, i) => {
@@ -58,22 +65,61 @@ const firstLevel = () => {
 			}
 		}
 	})
+	return { holds, heldBy }
+}
+
+const calcActions = (bricks, holds, heldBy) => {
 	const safeToDisintegrate = new Set()
-	for (let i = 0; i < bricks.length; i++){
-		if (Array.from(holds[i]).every(val => {
-			return heldBy[val].size >= 2
-		})) {
+	let fallenBricks = 0
+	for (let i = 0; i < bricks.length; i++) {
+		if (
+			Array.from(holds[i]).every((val) => {
+				return heldBy[val].size >= 2
+			})
+		) {
 			safeToDisintegrate.add(i)
+		} else {
+			const queue = []
+			const fall = new Set()
+			for (elem of holds[i]) {
+				if (heldBy[elem].size === 1) {
+					queue.push(elem)
+					fall.add(elem)
+				}
+			}
+			while (queue.length) {
+				const curr = queue.shift()
+				for (elem of holds[curr]) {
+					if (!fall.has(elem)) {
+						// Check if all supports of the elem are falling bricks
+						if (Array.from(heldBy[elem]).every((val) => fall.has(val))) {
+							fall.add(elem)
+							queue.push(elem)
+						}
+					}
+				}
+			}
+			fallenBricks += fall.size
 		}
 	}
-	res = safeToDisintegrate.size
+	return { safeToDisintegrate, fallenBricks }
+}
+
+const firstLevel = (res) => {
 	console.log('First level solution:\t', res)
 }
 
-const secondLevel = () => {
-	res = 0
+const secondLevel = (res) => {
 	console.log('Second level solution:\t', res)
 }
 
-firstLevel()
-// secondLevel()
+const main = () => {
+	const data = readData('input.txt')
+	const bricks = buildAndDrop(data)
+	const { holds, heldBy } = buildRelationships(bricks)
+	const { safeToDisintegrate, fallenBricks } = calcActions(bricks, holds, heldBy)
+	firstLevel(safeToDisintegrate.size)
+	secondLevel(fallenBricks)
+}
+
+main()
