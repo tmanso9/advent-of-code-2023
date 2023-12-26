@@ -1,8 +1,8 @@
 const { readData, printMap, DIR, LCM, PriorityQueue } = require('../utils')
+const { init } = require('z3-solver')
 
 class Hailstone {
-	constructor(id, origin, velocity) {
-		this.id = id
+	constructor(origin, velocity) {
 		this.origin = origin
 		this.velocity = velocity
 
@@ -16,15 +16,17 @@ class Hailstone {
 	}
 }
 
-let res = 0
-
 const hailstones = []
 
-const firstLevel = () => {
+const parseData = () => {
 	data.forEach((line, i) => {
 		const [origin, velocity] = line.split(' @ ').map((val) => val.split(', ').map(Number))
-		hailstones.push(new Hailstone(i, origin, velocity))
+		hailstones.push(new Hailstone(origin, velocity))
 	})
+}
+
+const firstLevel = () => {
+	let res = 0
 	for (let i = 0; i < hailstones.length - 1; i++) {
 		for (let j = i + 1; j < hailstones.length; j++) {
 			const hs1 = hailstones[i]
@@ -57,13 +59,38 @@ const firstLevel = () => {
 	console.log('First level solution:\t', res)
 }
 
-const secondLevel = () => {
-	console.log('Second level solution:\t', res)
+const secondLevel = async () => {
+	const { Context } = await init()
+	const { Solver, Int } = Context('main')
+	const solver = new Solver()
+	const rp = [Int.const('rx'), Int.const('ry'), Int.const('rz')]
+	const rv = [Int.const('rvx'), Int.const('rvy'), Int.const('rvz')]
+	for (let i = 0; i < 3; i++) {
+		const { origin, velocity } = hailstones[i]
+		const t = Int.const(`t${i}`)
+		solver.add(t.mul(velocity[0]).add(origin[0]).eq(t.mul(rv[0]).add(rp[0])))
+		solver.add(t.mul(velocity[1]).add(origin[1]).eq(t.mul(rv[1]).add(rp[1])))
+		solver.add(t.mul(velocity[2]).add(origin[2]).eq(t.mul(rv[2]).add(rp[2])))
+	}
+	if ((await solver.check()) === 'sat') {
+		const model = solver.model()
+		const result = model.eval(rp[0].add(rp[1]).add(rp[2])).toString()
+		console.log('Second level solution:\t', +result)
+	}
 }
 
 const input = 'input.txt'
 const data = readData(input)
 const minCollision = input === 'sample.txt' ? 7 : 200000000000000
 const maxCollision = input === 'sample.txt' ? 27 : 400000000000000
-firstLevel()
-// secondLevel()
+
+const main = async () => {
+	parseData()
+	firstLevel()
+	await secondLevel()
+	process.exit()
+}
+
+main().catch((error) => {
+	console.error('Error:', error)
+})
